@@ -8,6 +8,7 @@ let userNumber = document.querySelector('.guess');
 const checkButton = document.querySelector('.btn.check');
 const againButton = document.querySelector('.btn.again');
 const configObserver = { attributes: true, childList: true, subtree: true };
+const between = document.querySelector('.between');
 
 function youLose() {
   if (score == 0) {
@@ -17,6 +18,42 @@ function youLose() {
     document.querySelector('body').style.backgroundColor = '#810000';
     document.querySelector('.highscore').textContent = '0';
   }
+}
+
+let animationId = null;
+
+function scrambleText(text) {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const finalText = text.textContent;
+  let iteration = 0;
+  const originalText = text.dataset.original;
+
+  if (animationId !== null) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+    text.textContent = originalText;
+    return;
+  }
+
+  function update() {
+    text.textContent = finalText
+      .split('')
+      .map((char, index) => {
+        if (index < iteration) return finalText[index];
+        return letters[Math.floor(Math.random() * letters.length)];
+      })
+      .join('');
+
+    iteration += 1 / 5;
+
+    if (iteration < finalText.length) {
+      animationId = requestAnimationFrame(update);
+    } else {
+      text.textContent = between.textContent;
+      animationId = null;
+    }
+  }
+  animationId = requestAnimationFrame(update);
 }
 
 const observer = new MutationObserver(youLose);
@@ -29,6 +66,7 @@ userNumber.addEventListener('input', () => {
 
   if (Number(userNumber.value) < 1 || Number(userNumber.value) > 20) {
     userNumber.value = '';
+    scrambleText(between);
   }
 });
 
