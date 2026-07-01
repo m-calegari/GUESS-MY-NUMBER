@@ -7,12 +7,20 @@ let message = document.querySelector('.message');
 let userNumber = document.querySelector('.guess');
 const checkButton = document.querySelector('.btn.check');
 const againButton = document.querySelector('.btn.again');
+const configObserver = { attributes: true, childList: true, subtree: true };
 
-// function youLose() {
-//   if (score == 20) {
-//     message.textContent = 'You Lose!';
-//   }
-// }
+function youLose() {
+  if (score == 0) {
+    message.textContent = 'You Lose!';
+    checkButton.disabled = true;
+    userNumber.disabled = true;
+    document.querySelector('body').style.backgroundColor = '#810000';
+    document.querySelector('.highscore').textContent = '0';
+  }
+}
+
+const observer = new MutationObserver(youLose);
+observer.observe(score, configObserver);
 
 score = Number(score.textContent);
 
