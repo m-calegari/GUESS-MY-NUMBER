@@ -1,17 +1,20 @@
 'use strict';
 
-let rightNumber = Math.floor(Math.random() * 20) + 1;
+let rightNumber = Math.trunc(Math.random() * 20) + 1;
 let score = document.querySelector('.score');
 let highScore = Number(document.querySelector('.highscore').textContent);
-let message = document.querySelector('.message');
-let userNumber = document.querySelector('.guess');
+const message = document.querySelector('.message');
+const userNumber = document.querySelector('.guess');
 const checkButton = document.querySelector('.btn.check');
 const againButton = document.querySelector('.btn.again');
 const configObserver = { attributes: true, childList: true, subtree: true };
 const between = document.querySelector('.between');
 
+const observer = new MutationObserver(youLose);
+observer.observe(score, configObserver);
+
 function youLose() {
-  if (score == 0) {
+  if (score === 0) {
     message.textContent = 'You Lose!';
     checkButton.disabled = true;
     userNumber.disabled = true;
@@ -23,7 +26,8 @@ function youLose() {
 let animationId = null;
 
 function scrambleText(text) {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const letters =
+    '*¹²³£¢¬§¶•ªº–≠≤≥÷≈∞≡∑∏√∆∫∂∇∈∉∪∩⊂⊃⊆⊇⊕⊗⊥⋅⋆⋄⋆⋈⋉⋊⋋⋌⋍⋎⋏abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/~`';
   const finalText = text.textContent;
   let iteration = 0;
   const originalText = text.dataset.original;
@@ -38,26 +42,23 @@ function scrambleText(text) {
   function update() {
     text.textContent = finalText
       .split('')
-      .map((char, index) => {
-        if (index < iteration) return finalText[index];
+      .map(char => {
+        if (char === ' ') return ' ';
         return letters[Math.floor(Math.random() * letters.length)];
       })
       .join('');
 
-    iteration += 1 / 5;
+    iteration += 1;
 
-    if (iteration < finalText.length) {
+    if (iteration < 100) {
       animationId = requestAnimationFrame(update);
     } else {
-      text.textContent = between.textContent;
+      text.textContent = originalText;
       animationId = null;
     }
   }
   animationId = requestAnimationFrame(update);
 }
-
-const observer = new MutationObserver(youLose);
-observer.observe(score, configObserver);
 
 score = Number(score.textContent);
 
@@ -85,18 +86,20 @@ againButton.addEventListener('click', function () {
 });
 
 checkButton.addEventListener('click', function () {
-  if (userNumber.value == rightNumber) {
+  if (userNumber.value === '') {
+    scrambleText(between);
+  } else if (Number(userNumber.value) === rightNumber) {
     message.textContent = 'Correct Number!';
     highScore = Math.max(highScore, score);
     document.querySelector('.highscore').textContent = highScore;
     document.querySelector('body').style.backgroundColor = '#60b347';
     checkButton.disabled = true;
     userNumber.disabled = true;
-  } else if (userNumber.value > rightNumber) {
+  } else if (Number(userNumber.value) > rightNumber) {
     message.textContent = 'Too high!';
     score--;
     document.querySelector('.score').textContent = score;
-  } else if (userNumber.value < rightNumber) {
+  } else if (Number(userNumber.value) < rightNumber) {
     message.textContent = 'Too low!';
     score--;
     document.querySelector('.score').textContent = score;
@@ -108,7 +111,8 @@ console.log(rightNumber);
 console.log(score);
 console.log(highScore);
 
-//inserir nome de quem esta jogando
-// fazer o between embalhar as letras
+//inserir nome de quem esta jogando, fazer ser obrigatorio
 // quando a pagina carregar fazer animação de entrada do jogo
 // colocar musiquinha em loop
+
+//action when input is empty
