@@ -2,7 +2,8 @@
 
 let secretNumber = Math.trunc(Math.random() * 20) + 1;
 let score = 20;
-let highScore = 0;
+let playerName = '';
+let highScore = [];
 const configObserver = { attributes: true, childList: true, subtree: true };
 const between = document.querySelector('.between');
 const callElement = function (element) {
@@ -23,7 +24,7 @@ observer.observe(callElement('.score'), configObserver);
 function youLost() {
   if (score === 0) {
     displayMessage('.message', 'You Lost!');
-    displayMessage('.highscore', '0');
+    // displayMessage('.highscore', '0');
     callElement('.btn.check').disabled = true;
     callElement('.guess').disabled = true;
     changeColor('body', '#810000');
@@ -73,6 +74,52 @@ function scrambleText(text) {
   animationId = requestAnimationFrame(update);
 }
 
+// Function to update the high score list with the player's name and current score
+function updateHighScore(playerName, currentScore) {
+  highScore.push({
+    name: playerName,
+    score: currentScore,
+  });
+
+  /*
+sort() reorders the array.
+
+The part:
+
+(a, b) => b.score - a.score
+is the comparison function. It tells JavaScript how to decide the order.
+
+What are a and b?
+They are two items from the array that sort() compares.
+
+For example, JavaScript may compare:
+
+a = { name: "Bruno", score: 12 }
+b = { name: "Ana", score: 18 }
+
+Then it calculates:
+
+b.score - a.score
+18 - 12
+= 6
+Because the result is positive, b should come before a.
+
+That makes the array sorted from highest score to lowest score.
+*/
+
+  highScore.sort((a, b) => b.score - a.score);
+  highScore = highScore.slice(0, 3);
+  const container = document.querySelector('.highscore-container');
+  container.replaceChildren(
+    ...highScore.map(playerName => {
+      const newP = document.createElement('p');
+      newP.classList.add('label-highscore');
+      newP.textContent = `${playerName.name}: ${playerName.score}`;
+      return newP;
+    }),
+  );
+}
+
 // Add an event listener to the userNumber input field to validate the input and scramble the text if the input is invalid
 callElement('.guess').addEventListener('input', () => {
   callElement('.guess').value = callElement('.guess').value.replace(
@@ -107,6 +154,7 @@ callElement('.btn.again').addEventListener('click', function () {
 // Add an event listener to the "Check" button to handle the user's guess and update the game state accordingly
 callElement('.btn.check').addEventListener('click', function () {
   const guess = Number(callElement('.guess').value);
+
   // Check if the user has entered a number
   if (callElement('.guess').value === '') {
     // If the input is empty, scramble the text
@@ -114,18 +162,12 @@ callElement('.btn.check').addEventListener('click', function () {
   }
   // Check if the user's guess is correct
   else if (guess === secretNumber) {
-    if (score >= highScore) {
-      callElement('.highscore-container').insertAdjacentHTML(
-        'beforeend',
-        `<p class="label-highscore">${callElement('.yourName').value || 'Anonymous'}:<span class="previous-highscore"> ${score} </span></p>`,
-      );
-    }
     displayMessage('.message', 'Correct Number!');
-    highScore = Math.max(highScore, score);
-    // displayMessage('.highscore', highScore);
     changeColor('body', '#60b347');
     callElement('.btn.check').disabled = true;
     callElement('.guess').disabled = true;
+    playerName = callElement('.yourName').value || 'Anonymous';
+    updateHighScore(playerName, score);
   }
   // Check if the user's guess is too high or too low and update the score accordingly
   else if (guess !== secretNumber) {
@@ -140,8 +182,6 @@ callElement('.btn.check').addEventListener('click', function () {
 
 console.log(secretNumber);
 console.log(score);
-console.log(highScore);
 
-//inserir nome de quem esta jogando, fazer ser obrigatorio - logica: contar elementos com a mesma classe, se nao houver armazenar ate 3 nomes, depois apenas substituir quando o score for maior que algum highscore armazenado
 // quando a pagina carregar fazer animação de entrada do jogo
 // colocar musiquinha em loop
